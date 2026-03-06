@@ -1,26 +1,40 @@
-const input = document.querySelector("input");
-const sendBtn = document.querySelector("button");
-const chatBox = document.querySelector(".chat-box");
+const input = document.querySelector("#messageInput");
+const sendBtn = document.querySelector("#sendBtn");
+const chatBox = document.querySelector("#chatBox");
 
-sendBtn.onclick = async () => {
-  const userMessage = input.value;
+sendBtn.addEventListener("click", sendMessage);
+
+async function sendMessage() {
+  const userMessage = input.value.trim();
   if (!userMessage) return;
 
-  chatBox.innerHTML += `<div class="user">YOU: ${userMessage}</div>`;
+  // show user message
+  const userDiv = document.createElement("div");
+  userDiv.className = "user";
+  userDiv.innerText = "YOU: " + userMessage;
+  chatBox.appendChild(userDiv);
+
   input.value = "";
 
-  chatBox.innerHTML += `<div class="bot">BOT: typing...</div>`;
+  // typing message
+  const botDiv = document.createElement("div");
+  botDiv.className = "bot";
+  botDiv.innerText = "BOT: typing...";
+  chatBox.appendChild(botDiv);
 
-  const res = await fetch("/api/chat", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ message: userMessage }),
-  });
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message: userMessage }),
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  document.querySelector(".bot:last-child").innerText =
-    "BOT: " + data.reply;
-};
+    botDiv.innerText = "BOT: " + data.reply;
+  } catch (err) {
+    botDiv.innerText = "BOT: Error connecting AI";
+  }
+}
